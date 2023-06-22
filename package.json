@@ -1,6 +1,6 @@
 {
   "name": "react-native-spotlight-tour-guide",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
   "license": "MIT",
   "description": "A React Native package made for you to build great step by step tours",
@@ -12,7 +12,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "bundle": "tsup"
+    "bundle": "tsup",
+    "dev": "cross-env NODE_ENV=development yarn bundle --watch"
   },
   "files": [
     "dist",
@@ -33,6 +34,8 @@
     "@babel/core": "^7.20.0",
     "@tsconfig/react-native": "^3.0.2",
     "@types/react": "~18.0.14",
+    "cross-env": "^7.0.3",
+    "crossenv": "^0.0.2-security",
     "tsup": "^7.0.0",
     "typescript": "^4.9.4"
   },
