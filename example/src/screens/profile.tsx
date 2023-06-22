@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text } from "react-native";
-import { Step, SpotlightScrollView } from "react-native-spotlight-tour";
+import { Step, SpotlightScrollView } from "react-native-spotlight-tour-guide";
 import { useRef } from "react";
 
 import Animated from "react-native-reanimated";
@@ -13,10 +13,9 @@ export const Profile = () => {
       contentContainerStyle={{ padding: 16 }}
     >
       <Step
-        order={6}
+        name="show-user-profile-picture"
         scrollView={scrollViewRef}
-        text="Here is your profile picture"
-        tourKey="tour-one"
+        tourKeys={["tour-one", "tour-two"]}
         style={{
           marginTop: 200,
           marginBottom: 100,
@@ -69,9 +68,8 @@ export const Profile = () => {
       </Text>
 
       <Step
-        order={7}
-        tourKey="tour-one"
-        text="And this is the end of the tour"
+        name="show-the-end-of-the-tour"
+        tourKeys={["tour-one", "tour-two"]}
         scrollView={scrollViewRef}
         style={{ marginTop: 200 }}
       >

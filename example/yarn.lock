@@ -5888,10 +5888,10 @@ react-native-screens@~3.20.0:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
-react-native-spotlight-tour@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/react-native-spotlight-tour/-/react-native-spotlight-tour-1.0.6.tgz#e2785a5a8a84ad3d97a3fe6553411283d52597a9"
-  integrity sha512-mInpXgydYZ/SzLGqCwB60LAdr7WFgmj37hwkINmrPlnkgZXGjUfOk6Hq/BaTflVqIEI76paoasF9//vnamQvRg==
+react-native-spotlight-tour-guide@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/react-native-spotlight-tour-guide/-/react-native-spotlight-tour-guide-1.0.5.tgz#efcf6d35b9a018ff715b3057775529ff4a194020"
+  integrity sha512-wTF+lMRgwh38g4/B+Lk/FOoGdiY4jobjWgwy2MrkARV/G9ANIQXrwZ1pKzxxjAk2KWh4JLfPb0gbQqkErqRkSQ==
   dependencies:
     "@shopify/react-native-skia" "0.1.172"
     react "18.2.0"

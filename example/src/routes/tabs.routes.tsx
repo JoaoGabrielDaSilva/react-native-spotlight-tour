@@ -3,7 +3,7 @@ import { Home } from "../screens/home";
 import { Profile } from "../screens/profile";
 import { Text } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { Step } from "react-native-spotlight-tour";
+import { Step } from "react-native-spotlight-tour-guide";
 
 type TabParamList = {
   Home: undefined;
@@ -24,9 +24,9 @@ export const Tabs = () => {
         options={{
           tabBarLabel: () => (
             <Step
-              order={5}
+              name="show-profile-tab"
               text="Press here to go to profile screen"
-              tourKey="tour-one"
+              tourKeys={["tour-one", "tour-two"]}
               onPress={() => navigate("Profile")}
             >
               <Text>Home</Text>

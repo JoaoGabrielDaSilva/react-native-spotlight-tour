@@ -3,8 +3,8 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
-import { Step } from "../types";
 import {
   Dimensions,
   LayoutRectangle,
@@ -13,9 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { StepLayout } from "../types";
 
 type TooltipProps = {
-  currentStep: SharedValue<Step | null>;
+  currentStep: SharedValue<StepLayout | null>;
   tooltipProgress: SharedValue<number>;
   spotlightPadding: number;
   text: string;
@@ -63,7 +64,7 @@ export const Tooltip = ({
     const shouldPositionTop = bottomPosition >= windowHeight - 100;
 
     return {
-      top: shouldPositionTop ? topPosition : bottomPosition,
+      top: withTiming(shouldPositionTop ? topPosition : bottomPosition),
       opacity: tooltipProgress.value,
     };
   });

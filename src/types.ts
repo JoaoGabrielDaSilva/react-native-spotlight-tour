@@ -1,5 +1,5 @@
 import { LayoutRectangle } from "react-native";
 
-export type Step = LayoutRectangle;
+export type StepLayout = LayoutRectangle;
 
-export type Steps = Record<number, Step>;
+export type Step = { name: string; text: string };
