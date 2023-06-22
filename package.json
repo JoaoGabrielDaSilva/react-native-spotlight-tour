@@ -1,6 +1,6 @@
 {
   "name": "react-native-spotlight-tour-guide",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
   "license": "MIT",
   "description": "A React Native package made for you to build great step by step tours",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@tsconfig/react-native": "^3.0.2",
     "@types/react": "~18.0.14",
     "tsup": "^7.0.0",
     "typescript": "^4.9.4"
