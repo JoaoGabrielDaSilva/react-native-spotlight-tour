@@ -2,8 +2,8 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, StyleSheet } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
-import { Tabs } from "./src/routes/tabs.routes";
 import { SpotlightProvider } from "react-native-spotlight-tour-guide";
+import { StackRoutes } from "./src/routes/stack.routes";
 
 export default function App() {
   return (
@@ -11,7 +11,7 @@ export default function App() {
       <StatusBar style="auto" />
       <SpotlightProvider>
         <NavigationContainer>
-          <Tabs />
+          <StackRoutes />
         </NavigationContainer>
       </SpotlightProvider>
     </SafeAreaView>

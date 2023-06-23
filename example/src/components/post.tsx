@@ -3,13 +3,18 @@ import { Step } from "react-native-spotlight-tour-guide";
 
 const { width } = Dimensions.get("window");
 
-export const Post = () => {
+type PostProps = {
+  tourEnabled: boolean;
+};
+
+export const Post = ({ tourEnabled }: PostProps) => {
   return (
     <View style={styles.container}>
       <Step
         name="show-post-owner"
-        tourKeys={["tour-two"]}
+        tourKeys={["feed-post-tour"]}
         style={{ marginBottom: 12 }}
+        isEnabled={tourEnabled}
       >
         <View style={styles.header}>
           <Image
@@ -23,7 +28,12 @@ export const Post = () => {
           </View>
         </View>
       </Step>
-      <Step name="show-post-image" tourKeys={["tour-two"]} style={{ flex: 1 }}>
+      <Step
+        name="show-post-image"
+        isEnabled={tourEnabled}
+        tourKeys={["feed-post-tour"]}
+        style={{ flex: 1 }}
+      >
         <Image
           source={{
             uri: "https://cdn.visualwilderness.com/wp-content/uploads/2019/10/DSC06179-Edit.jpg",
@@ -33,14 +43,23 @@ export const Post = () => {
       </Step>
       <Step
         name="show-post-action-bar"
-        tourKeys={["tour-two"]}
+        tourKeys={["feed-post-tour"]}
         style={{ marginTop: 12 }}
+        isEnabled={tourEnabled}
       >
         <View style={styles.footer}>
-          <Step name="show-post-like-button" tourKeys={["tour-two"]}>
+          <Step
+            name="show-post-like-button"
+            tourKeys={["feed-post-tour"]}
+            isEnabled={tourEnabled}
+          >
             <Text style={styles.action}>Like</Text>
           </Step>
-          <Step name="show-post-comment-button" tourKeys={["tour-two"]}>
+          <Step
+            name="show-post-comment-button"
+            tourKeys={["feed-post-tour"]}
+            isEnabled={tourEnabled}
+          >
             <Text style={styles.action}>Action</Text>
           </Step>
         </View>

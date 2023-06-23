@@ -80,6 +80,15 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
     setTourkey(null);
     setStepIndex(null);
     setSteps([]);
+    onPress.current = undefined;
+    currentStep.value = {
+      width: 0,
+      height: 0,
+      x: 0,
+      y: 0,
+    };
+    scrollX.value = 0;
+    scrollY.value = 0;
     tooltipProgress.value = 0;
     stepX.current = windowWidth / 2;
     stepY.current = 0;

@@ -64,7 +64,7 @@ export const Tooltip = ({
       tooltipLayout.value.height -
       TOP_SPOTLIGHT_PADDING;
 
-    const shouldPositionTop = bottomPosition >= windowHeight - 100;
+    const shouldPositionTop = bottomPosition >= windowHeight - 150;
 
     return {
       top: scrollProgress.value

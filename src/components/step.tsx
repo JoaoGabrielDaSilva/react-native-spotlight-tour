@@ -82,7 +82,7 @@ export const Step = <T,>({
         : scrollY.value);
 
   const needsScrollX = (x: number, width: number) =>
-    x > windowWidth ||
+    x + width > windowWidth ||
     x <
       (scrollX.value > windowWidth
         ? windowWidth - scrollX.value
@@ -124,13 +124,17 @@ export const Step = <T,>({
   };
 
   const scrollScrollViewYAxis = (y: number, height: number) =>
-    verticalScrollView?.current?.scrollTo({ y: y - height });
+    verticalScrollView?.current?.scrollTo({
+      y: y - height + SPOTLIGHT_PADDING,
+    });
 
   const scrollScrollViewXAxis = (x: number, timeout = 0) =>
     setTimeout(() => horizontalScrollView?.current?.scrollTo({ x }), timeout);
 
   const scrollFlatListViewYAxis = (y: number, height: number) =>
-    verticalFlatList?.current?.scrollToOffset({ offset: y - height });
+    verticalFlatList?.current?.scrollToOffset({
+      offset: y - height + SPOTLIGHT_PADDING,
+    });
 
   const scrollFlatListViewXAxis = (x: number, timeout = 0) =>
     setTimeout(
@@ -156,8 +160,8 @@ export const Step = <T,>({
       return;
     }
 
-    isScrolling.value = withTiming(1, {});
-    tooltipProgress.value = withTiming(0, {});
+    isScrolling.value = withTiming(1);
+    tooltipProgress.value = withTiming(0);
 
     const willScrollOnYAxis = verticalScrollView && needsScrollOnYAxis;
     const willScrollOnXAxis = verticalFlatList && needsScrollOnYAxis;
@@ -188,7 +192,9 @@ export const Step = <T,>({
         tooltipProgress.value = withTiming(1);
         isScrolling.value = withTiming(0);
       },
-      willScrollOnYAxis ? SCROLL_TIMEOUT * 2 : SCROLL_TIMEOUT
+      needsScrollOnXAxis && needsScrollOnYAxis
+        ? SCROLL_TIMEOUT * 2
+        : SCROLL_TIMEOUT
     );
   };
 

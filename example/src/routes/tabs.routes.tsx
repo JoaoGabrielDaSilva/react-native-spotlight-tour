@@ -4,10 +4,12 @@ import { Profile } from "../screens/profile";
 import { Text } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Step } from "react-native-spotlight-tour-guide";
+import { Stories } from "../screens/stories";
 
 type TabParamList = {
   Feed: undefined;
   Profile: undefined;
+  Stories: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -16,7 +18,22 @@ export const Tabs = () => {
   const { navigate } = useNavigation<NavigationProp<TabParamList>>();
 
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Stories"
+        component={Stories}
+        options={{
+          tabBarLabel: ({ children }) => (
+            <Step
+              name="show-stories-tab"
+              tourKeys={["tour-one", "tour-two"]}
+              onPress={() => navigate("Stories")}
+            >
+              <Text style={{ fontSize: 16 }}>{children}</Text>
+            </Step>
+          ),
+        }}
+      />
       <Tab.Screen
         name="Feed"
         component={Feed}
