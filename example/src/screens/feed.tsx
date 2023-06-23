@@ -9,7 +9,7 @@ import {
   useSpotlight,
 } from "react-native-spotlight-tour-guide";
 
-export const Home = () => {
+export const Feed = () => {
   const scrollViewRef = useRef<Animated.ScrollView>(null);
 
   const { start } = useSpotlight();
@@ -41,18 +41,6 @@ export const Home = () => {
               name: "show-post-comment-button",
               text: "and here you can comment on a post",
             },
-            {
-              name: "show-profile-tab",
-              text: "If you want to go to the profile screen, just click here",
-            },
-            {
-              name: "show-user-profile-picture",
-              text: "And this is your profile Picture",
-            },
-            {
-              name: "show-the-end-of-the-tour",
-              text: "And this is the last step :)",
-            },
           ];
 
           start("tour-one", steps);
@@ -61,34 +49,11 @@ export const Home = () => {
         <Text style={styles.startButton}>Start Tutorial 1</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => {
-          const steps = [
-            {
-              name: "show-profile-tab",
-              text: "If you want to go to the profile screen, just click here",
-            },
-            {
-              name: "show-user-profile-picture",
-              text: "And this is your profile Picture",
-            },
-            {
-              name: "show-the-end-of-the-tour",
-              text: "And this is the last step :)",
-            },
-          ];
-
-          start("tour-two", steps);
-        }}
-      >
-        <Text style={styles.startButton}>Start Tutorial 2</Text>
-      </TouchableOpacity>
-
       <Step
         tourKeys={["tour-one"]}
         name="show-post"
         scrollView={scrollViewRef}
-        style={{ marginTop: 100 }}
+        style={{ marginTop: 24 }}
       >
         <Post />
       </Step>

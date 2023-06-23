@@ -1,12 +1,12 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Home } from "../screens/home";
+import { Feed } from "../screens/feed";
 import { Profile } from "../screens/profile";
 import { Text } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Step } from "react-native-spotlight-tour-guide";
 
 type TabParamList = {
-  Home: undefined;
+  Feed: undefined;
   Profile: undefined;
 };
 
@@ -16,20 +16,34 @@ export const Tabs = () => {
   const { navigate } = useNavigation<NavigationProp<TabParamList>>();
 
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={Home} />
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Screen
+        name="Feed"
+        component={Feed}
+        options={{
+          tabBarLabel: ({ children }) => (
+            <Step
+              name="show-feed-tab"
+              tourKeys={["tour-one", "tour-two"]}
+              onPress={() => navigate("Feed")}
+            >
+              <Text style={{ fontSize: 16 }}>{children}</Text>
+            </Step>
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="Profile"
         component={Profile}
         options={{
-          tabBarLabel: () => (
+          tabBarLabel: ({ children }) => (
             <Step
               name="show-profile-tab"
-              text="Press here to go to profile screen"
               tourKeys={["tour-one", "tour-two"]}
               onPress={() => navigate("Profile")}
             >
-              <Text>Home</Text>
+              <Text style={{ fontSize: 16 }}>{children}</Text>
             </Step>
           ),
         }}
