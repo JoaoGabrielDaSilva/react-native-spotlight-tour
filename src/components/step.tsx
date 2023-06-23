@@ -1,14 +1,22 @@
 import React, { ReactNode, RefObject, useEffect, useRef } from "react";
-import { Dimensions, Platform, StyleProp, View, ViewStyle } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle,
+} from "react-native";
 import Animated, { withDelay, withTiming } from "react-native-reanimated";
 import { runTiming } from "@shopify/react-native-skia";
 import { useSpotlight } from "../contexts/spotlight-provider";
 
-type StepProps = {
+type StepProps<T> = {
   children: ReactNode;
   name: string;
   style?: StyleProp<ViewStyle>;
   scrollView?: RefObject<Animated.ScrollView>;
+  flatList?: RefObject<Animated.FlatList<T>>;
   tourKeys: string[];
   onPress?: () => void;
   text: string;
@@ -19,15 +27,15 @@ const { height: windowHeight } = Dimensions.get("window");
 const SCROLL_TIMEOUT = 500;
 const SPOTLIGHT_PADDING = 16;
 
-export const Step = ({
+export const Step = <T,>({
   children,
   name,
   style,
   tourKeys,
   scrollView,
-
+  flatList,
   onPress,
-}: StepProps) => {
+}: StepProps<T>) => {
   const {
     activeTourKey,
     currentStep,
@@ -53,11 +61,13 @@ export const Step = ({
       }
 
       const isOffScreenOnY =
-        y > windowHeight ||
+        y + height > windowHeight ||
         y <
           (scrollY.value > windowHeight
             ? windowHeight - scrollY.value
             : scrollY.value);
+
+      console.log(isOffScreenOnY);
 
       if (!isOffScreenOnY) {
         runTiming(stepX, x - SPOTLIGHT_PADDING / 2, { duration: 200 });
@@ -90,7 +100,13 @@ export const Step = ({
         tooltipProgress.value = withTiming(1, { duration: SCROLL_TIMEOUT });
       });
 
-      scrollView?.current?.scrollTo({ y: y - height });
+      if (scrollView) {
+        scrollView?.current?.scrollTo({ y: y - height });
+      }
+
+      if (flatList) {
+        flatList?.current?.scrollToOffset({ offset: y - height });
+      }
 
       runTiming(stepHeight, 0, { duration: 100 });
       setTimeout(() => {
