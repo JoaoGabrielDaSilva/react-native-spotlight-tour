@@ -5,8 +5,10 @@ import { Text } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Step } from "react-native-spotlight-tour-guide";
 import { Stories } from "../screens/stories";
+import { Menu } from "../screens/menu";
 
 type TabParamList = {
+  Menu: undefined;
   Feed: undefined;
   Profile: undefined;
   Stories: undefined;
@@ -26,7 +28,7 @@ export const Tabs = () => {
           tabBarLabel: ({ children }) => (
             <Step
               name="show-stories-tab"
-              tourKeys={["tour-one", "tour-two"]}
+              tourKeys={["menu-tour"]}
               onPress={() => navigate("Stories")}
             >
               <Text style={{ fontSize: 16 }}>{children}</Text>
@@ -41,7 +43,7 @@ export const Tabs = () => {
           tabBarLabel: ({ children }) => (
             <Step
               name="show-feed-tab"
-              tourKeys={["tour-one", "tour-two"]}
+              tourKeys={["menu-tour"]}
               onPress={() => navigate("Feed")}
             >
               <Text style={{ fontSize: 16 }}>{children}</Text>
@@ -57,8 +59,23 @@ export const Tabs = () => {
           tabBarLabel: ({ children }) => (
             <Step
               name="show-profile-tab"
-              tourKeys={["tour-one", "tour-two"]}
+              tourKeys={["menu-tour"]}
               onPress={() => navigate("Profile")}
+            >
+              <Text style={{ fontSize: 16 }}>{children}</Text>
+            </Step>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Menu"
+        component={Menu}
+        options={{
+          tabBarLabel: ({ children }) => (
+            <Step
+              name="show-menu-tab"
+              tourKeys={["menu-tour"]}
+              onPress={() => navigate("Menu")}
             >
               <Text style={{ fontSize: 16 }}>{children}</Text>
             </Step>

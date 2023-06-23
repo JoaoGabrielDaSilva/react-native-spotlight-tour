@@ -184,6 +184,12 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
           isFirst={stepIndex === 1}
           isLast={stepIndex === steps.length - 1}
           stop={stop}
+          onFinish={() => {
+            if (onPress?.current) {
+              onPress.current();
+            }
+            stop();
+          }}
           next={next}
           previous={previous}
         />

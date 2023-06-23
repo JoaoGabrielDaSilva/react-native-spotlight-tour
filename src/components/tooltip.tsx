@@ -27,6 +27,7 @@ type TooltipProps = {
   next: () => void;
   previous: () => void;
   stop: () => void;
+  onFinish: () => void;
 };
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
@@ -40,6 +41,7 @@ export const Tooltip = ({
   isFirst,
   isLast,
   next,
+  onFinish,
   previous,
   stop,
 }: TooltipProps) => {
@@ -88,6 +90,7 @@ export const Tooltip = ({
         stop={stop}
         next={next}
         previous={previous}
+        onFinish={onFinish}
       />
     </Animated.View>
   );
@@ -99,12 +102,14 @@ type TooltipButtonsProps = {
   stop: () => void;
   next: () => void;
   previous: () => void;
+  onFinish: () => void;
 };
 
 const TooltipButtons = ({
   isFirst,
   isLast,
   next,
+  onFinish,
   previous,
   stop,
 }: TooltipButtonsProps) => (
@@ -123,7 +128,7 @@ const TooltipButtons = ({
           <Text style={buttonStyles.text}>Next</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity onPress={stop}>
+        <TouchableOpacity onPress={onFinish}>
           <Text style={buttonStyles.text}>Finish</Text>
         </TouchableOpacity>
       )}
