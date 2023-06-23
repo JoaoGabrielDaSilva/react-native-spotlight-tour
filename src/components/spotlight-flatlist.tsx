@@ -16,11 +16,15 @@ export const SpotlightFlatList = forwardRef(
     props: SpotlightFlatListProps<T>,
     ref: ForwardedRef<Animated.FlatList<T>>
   ) => {
-    const { scrollY } = useSpotlight();
+    const { scrollY, scrollX } = useSpotlight();
 
     const scrollHandler = useAnimatedScrollHandler({
       onScroll: (e) => {
-        scrollY.value = e.contentOffset.y;
+        if (props.horizontal) {
+          scrollX.value = e.contentOffset.x;
+        } else {
+          scrollY.value = e.contentOffset.y;
+        }
       },
     });
 

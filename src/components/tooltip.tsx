@@ -1,6 +1,7 @@
 import React from "react";
 import Animated, {
   SharedValue,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -18,6 +19,7 @@ import { StepLayout } from "../types";
 type TooltipProps = {
   currentStep: SharedValue<StepLayout | null>;
   tooltipProgress: SharedValue<number>;
+  scrollProgress: SharedValue<number>;
   spotlightPadding: number;
   text: string;
   isFirst: boolean;
@@ -34,6 +36,7 @@ export const Tooltip = ({
   spotlightPadding,
   text,
   tooltipProgress,
+  scrollProgress,
   isFirst,
   isLast,
   next,
@@ -64,7 +67,11 @@ export const Tooltip = ({
     const shouldPositionTop = bottomPosition >= windowHeight - 100;
 
     return {
-      top: withTiming(shouldPositionTop ? topPosition : bottomPosition),
+      top: scrollProgress.value
+        ? shouldPositionTop
+          ? topPosition
+          : bottomPosition
+        : withTiming(shouldPositionTop ? topPosition : bottomPosition),
       opacity: tooltipProgress.value,
     };
   });

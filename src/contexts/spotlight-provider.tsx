@@ -27,11 +27,13 @@ type SpotlightContext = {
   currentStep: SharedValue<StepLayout | null>;
   isScrolling: SharedValue<number>;
   scrollY: SharedValue<number>;
+  scrollX: SharedValue<number>;
   activeTourKey: string | null;
   next: () => void;
   previous: () => void;
   start: (tourKey: string, steps: Step[]) => void;
   text: string;
+  steps: Step[];
   setText: React.Dispatch<React.SetStateAction<string>>;
   onPress: MutableRefObject<(() => void) | undefined>;
   tooltipProgress: SharedValue<number>;
@@ -67,7 +69,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
   const currentStep = useSharedValue<StepLayout | null>(null);
   const isScrolling = useSharedValue(0);
   const scrollY = useSharedValue(0);
-  const clock = useClockValue();
+  const scrollX = useSharedValue(0);
 
   const start = (tourKey: string, steps: Step[]) => {
     setTourkey(tourKey);
@@ -117,10 +119,12 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
         isScrolling,
         currentStep,
         scrollY,
+        scrollX,
         onPress,
         text,
         stepX,
         stepY,
+        steps,
         stepWidth,
         stepHeight,
         setText,
@@ -166,6 +170,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
           currentStep={currentStep}
           spotlightPadding={SPOTLIGHT_PADDING}
           tooltipProgress={tooltipProgress}
+          scrollProgress={isScrolling}
           text={text}
           isFirst={stepIndex === 1}
           isLast={stepIndex === steps.length - 1}

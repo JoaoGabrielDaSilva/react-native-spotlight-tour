@@ -8,7 +8,7 @@ export const Post = () => {
     <View style={styles.container}>
       <Step
         name="show-post-owner"
-        tourKeys={["tour-one"]}
+        tourKeys={["tour-two"]}
         style={{ marginBottom: 12 }}
       >
         <View style={styles.header}>
@@ -23,7 +23,7 @@ export const Post = () => {
           </View>
         </View>
       </Step>
-      <Step name="show-post-image" tourKeys={["tour-one"]} style={{ flex: 1 }}>
+      <Step name="show-post-image" tourKeys={["tour-two"]} style={{ flex: 1 }}>
         <Image
           source={{
             uri: "https://cdn.visualwilderness.com/wp-content/uploads/2019/10/DSC06179-Edit.jpg",
@@ -33,14 +33,14 @@ export const Post = () => {
       </Step>
       <Step
         name="show-post-action-bar"
-        tourKeys={["tour-one"]}
+        tourKeys={["tour-two"]}
         style={{ marginTop: 12 }}
       >
         <View style={styles.footer}>
-          <Step name="show-post-like-button" tourKeys={["tour-one"]}>
+          <Step name="show-post-like-button" tourKeys={["tour-two"]}>
             <Text style={styles.action}>Like</Text>
           </Step>
-          <Step name="show-post-comment-button" tourKeys={["tour-one"]}>
+          <Step name="show-post-comment-button" tourKeys={["tour-two"]}>
             <Text style={styles.action}>Action</Text>
           </Step>
         </View>

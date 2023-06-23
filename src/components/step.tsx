@@ -20,12 +20,14 @@ type StepProps<T> = {
   tourKeys: string[];
   onPress?: () => void;
   text: string;
+  isActive?: boolean;
 };
 
-const { height: windowHeight } = Dimensions.get("window");
+const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
-const SCROLL_TIMEOUT = 500;
 const SPOTLIGHT_PADDING = 16;
+const SCROLL_TIMEOUT = 500;
+const REMEASURE_TIMEOUT = SCROLL_TIMEOUT * 2;
 
 export const Step = <T,>({
   children,
@@ -35,13 +37,16 @@ export const Step = <T,>({
   scrollView,
   flatList,
   onPress,
+  isActive = true,
 }: StepProps<T>) => {
   const {
     activeTourKey,
     currentStep,
     isScrolling,
     scrollY,
+    scrollX,
     tooltipProgress,
+    steps,
     onPress: spotlightOnPress,
     stepHeight,
     stepWidth,
@@ -54,6 +59,7 @@ export const Step = <T,>({
 
   const measureElement = () =>
     stepRef.current?.measure((_, __, width, height, x, y) => {
+      console.log(x);
       if (onPress) {
         spotlightOnPress.current = onPress;
       } else {
@@ -67,9 +73,14 @@ export const Step = <T,>({
             ? windowHeight - scrollY.value
             : scrollY.value);
 
-      console.log(isOffScreenOnY);
+      const isOffScreenOnX =
+        x > windowWidth ||
+        x <
+          (scrollX.value > windowWidth
+            ? windowWidth - scrollX.value
+            : -scrollX.value);
 
-      if (!isOffScreenOnY) {
+      if (!isOffScreenOnY && !isOffScreenOnX) {
         runTiming(stepX, x - SPOTLIGHT_PADDING / 2, { duration: 200 });
         runTiming(
           stepY,
@@ -94,18 +105,21 @@ export const Step = <T,>({
       }
 
       isScrolling.value = withTiming(1, {}, () => {
-        isScrolling.value = withTiming(0, { duration: SCROLL_TIMEOUT });
+        isScrolling.value = withDelay(SCROLL_TIMEOUT, withTiming(0));
       });
       tooltipProgress.value = withTiming(0, {}, () => {
-        tooltipProgress.value = withTiming(1, { duration: SCROLL_TIMEOUT });
+        tooltipProgress.value = withDelay(SCROLL_TIMEOUT + 500, withTiming(1));
       });
 
-      if (scrollView) {
+      if (scrollView && isOffScreenOnY) {
         scrollView?.current?.scrollTo({ y: y - height });
       }
-
       if (flatList) {
-        flatList?.current?.scrollToOffset({ offset: y - height });
+        // flatList?.current?.scrollToOffset({ offset: y - height });
+        setTimeout(
+          () => flatList?.current?.scrollToOffset({ offset: x }),
+          SCROLL_TIMEOUT
+        );
       }
 
       runTiming(stepHeight, 0, { duration: 100 });
@@ -127,15 +141,21 @@ export const Step = <T,>({
             y: Platform.OS === "ios" ? y : y - 30,
           };
         });
-      }, SCROLL_TIMEOUT);
+      }, REMEASURE_TIMEOUT);
     });
 
   useEffect(() => {
-    const isActive =
+    const active =
+      isActive &&
       name === activeStepName &&
       activeTourKey &&
       tourKeys.includes(activeTourKey);
-    if (isActive) {
+
+    if (!!activeTourKey && !steps.some((step) => step.name === name)) {
+      console.warn("The current step is not registered in the current tour");
+    }
+
+    if (active) {
       setTimeout(() => measureElement(), 100);
     }
   }, [activeStepName, activeTourKey]);
