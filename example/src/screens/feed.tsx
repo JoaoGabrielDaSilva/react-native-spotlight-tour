@@ -85,8 +85,8 @@ export const Feed = () => {
           <Step
             tourKeys={["tour-one", "tour-three"]}
             name={`show-story-${index}`}
-            flatList={firstHorizontalFlatlistRef}
-            scrollView={scrollViewRef}
+            horizontalFlatList={firstHorizontalFlatlistRef}
+            verticalScrollView={scrollViewRef}
             style={{ marginTop: 24, marginRight: 12 }}
           >
             <View>
@@ -130,7 +130,7 @@ export const Feed = () => {
       <Step
         tourKeys={["tour-two"]}
         name="show-post"
-        scrollView={scrollViewRef}
+        verticalScrollView={scrollViewRef}
         style={{ marginTop: 24 }}
       >
         <Post />
@@ -172,8 +172,8 @@ export const Feed = () => {
           <Step
             tourKeys={["tour-three"]}
             name={`show-second-story-${index}`}
-            scrollView={scrollViewRef}
-            flatList={horizontalFlatlistRef}
+            verticalScrollView={scrollViewRef}
+            horizontalFlatList={horizontalFlatlistRef}
             style={{ marginTop: 24, marginRight: 12 }}
           >
             <View>

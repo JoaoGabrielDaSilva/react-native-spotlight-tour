@@ -2,6 +2,7 @@ import React, { ReactNode, RefObject, useEffect, useRef } from "react";
 import {
   Dimensions,
   FlatList,
+  LayoutRectangle,
   Platform,
   StyleProp,
   View,
@@ -15,29 +16,32 @@ type StepProps<T> = {
   children: ReactNode;
   name: string;
   style?: StyleProp<ViewStyle>;
-  scrollView?: RefObject<Animated.ScrollView>;
-  flatList?: RefObject<Animated.FlatList<T>>;
+  verticalScrollView?: RefObject<Animated.ScrollView>;
+  horizontalScrollView?: RefObject<Animated.ScrollView>;
+  verticalFlatList?: RefObject<FlatList<T>>;
+  horizontalFlatList?: RefObject<FlatList<T>>;
   tourKeys: string[];
   onPress?: () => void;
   text: string;
-  isActive?: boolean;
+  isEnabled?: boolean;
 };
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 const SPOTLIGHT_PADDING = 16;
 const SCROLL_TIMEOUT = 500;
-const REMEASURE_TIMEOUT = SCROLL_TIMEOUT * 2;
 
 export const Step = <T,>({
   children,
   name,
   style,
   tourKeys,
-  scrollView,
-  flatList,
+  verticalScrollView,
+  horizontalScrollView,
+  verticalFlatList,
+  horizontalFlatList,
   onPress,
-  isActive = true,
+  isEnabled = true,
 }: StepProps<T>) => {
   const {
     activeTourKey,
@@ -57,106 +61,146 @@ export const Step = <T,>({
 
   const stepRef = useRef<View>(null);
 
-  const measureElement = () =>
-    stepRef.current?.measure((_, __, width, height, x, y) => {
-      console.log(x);
-      if (onPress) {
-        spotlightOnPress.current = onPress;
-      } else {
-        spotlightOnPress.current = undefined;
-      }
-
-      const isOffScreenOnY =
-        y + height > windowHeight ||
-        y <
-          (scrollY.value > windowHeight
-            ? windowHeight - scrollY.value
-            : scrollY.value);
-
-      const isOffScreenOnX =
-        x > windowWidth ||
-        x <
-          (scrollX.value > windowWidth
-            ? windowWidth - scrollX.value
-            : -scrollX.value);
-
-      if (!isOffScreenOnY && !isOffScreenOnX) {
-        runTiming(stepX, x - SPOTLIGHT_PADDING / 2, { duration: 200 });
-        runTiming(
-          stepY,
-          Platform.OS === "ios"
-            ? y - SPOTLIGHT_PADDING / 2
-            : y - SPOTLIGHT_PADDING / 2 - 30,
-          {
-            duration: 200,
-          }
-        );
-        runTiming(stepWidth, width + SPOTLIGHT_PADDING, { duration: 200 });
-        runTiming(stepHeight, height + SPOTLIGHT_PADDING, { duration: 200 });
-
-        tooltipProgress.value = withTiming(1, { duration: 200 });
-
-        return (currentStep.value = {
+  const measureElement = async (): Promise<LayoutRectangle> => {
+    return new Promise((res) =>
+      stepRef.current?.measure((_, __, width, height, x, y) =>
+        res({
+          x,
+          y,
           width,
           height,
-          x,
-          y: Platform.OS === "ios" ? y : y - 30,
-        });
+        })
+      )
+    );
+  };
+
+  const needsScrollY = (y: number, height: number) =>
+    y + height > windowHeight ||
+    y <
+      (scrollY.value > windowHeight
+        ? windowHeight - scrollY.value
+        : scrollY.value);
+
+  const needsScrollX = (x: number, width: number) =>
+    x > windowWidth ||
+    x <
+      (scrollX.value > windowWidth
+        ? windowWidth - scrollX.value
+        : -scrollX.value);
+
+  const assignOnPress = () => {
+    if (onPress) {
+      spotlightOnPress.current = onPress;
+    } else {
+      spotlightOnPress.current = undefined;
+    }
+  };
+
+  const addSpotlightOnElement = (
+    { width, height, x, y }: LayoutRectangle,
+    duration = 200
+  ) => {
+    runTiming(stepX, x - SPOTLIGHT_PADDING / 2, { duration });
+    runTiming(
+      stepY,
+      Platform.OS === "ios"
+        ? y - SPOTLIGHT_PADDING / 2
+        : y - SPOTLIGHT_PADDING / 2 - 30,
+      {
+        duration,
       }
+    );
+    runTiming(stepWidth, width + SPOTLIGHT_PADDING, { duration });
+    runTiming(stepHeight, height + SPOTLIGHT_PADDING, { duration });
+  };
 
-      isScrolling.value = withTiming(1, {}, () => {
-        isScrolling.value = withDelay(SCROLL_TIMEOUT, withTiming(0));
-      });
-      tooltipProgress.value = withTiming(0, {}, () => {
-        tooltipProgress.value = withDelay(SCROLL_TIMEOUT + 500, withTiming(1));
-      });
+  const moveTooltipToElement = ({ width, height, x, y }: LayoutRectangle) => {
+    currentStep.value = {
+      width,
+      height,
+      x,
+      y: Platform.OS === "ios" ? y : y - 30,
+    };
+  };
 
-      if (scrollView && isOffScreenOnY) {
-        scrollView?.current?.scrollTo({ y: y - height });
-      }
-      if (flatList) {
-        // flatList?.current?.scrollToOffset({ offset: y - height });
-        setTimeout(
-          () => flatList?.current?.scrollToOffset({ offset: x }),
-          SCROLL_TIMEOUT
-        );
-      }
+  const scrollScrollViewYAxis = (y: number, height: number) =>
+    verticalScrollView?.current?.scrollTo({ y: y - height });
 
-      runTiming(stepHeight, 0, { duration: 100 });
-      setTimeout(() => {
-        stepRef.current?.measure((_, __, width, height, x, y) => {
-          stepX.current = x - SPOTLIGHT_PADDING / 2;
-          stepY.current =
-            Platform.OS === "ios"
-              ? y - SPOTLIGHT_PADDING / 2
-              : y - SPOTLIGHT_PADDING / 2 - 30;
+  const scrollScrollViewXAxis = (x: number, timeout = 0) =>
+    setTimeout(() => horizontalScrollView?.current?.scrollTo({ x }), timeout);
 
-          stepWidth.current = width + SPOTLIGHT_PADDING;
-          stepHeight.current = height + SPOTLIGHT_PADDING;
+  const scrollFlatListViewYAxis = (y: number, height: number) =>
+    verticalFlatList?.current?.scrollToOffset({ offset: y - height });
 
-          currentStep.value = {
-            width,
-            height,
-            x,
-            y: Platform.OS === "ios" ? y : y - 30,
-          };
-        });
-      }, REMEASURE_TIMEOUT);
-    });
+  const scrollFlatListViewXAxis = (x: number, timeout = 0) =>
+    setTimeout(
+      () => horizontalFlatList?.current?.scrollToOffset({ offset: x }),
+      timeout
+    );
 
-  useEffect(() => {
-    const active =
-      isActive &&
-      name === activeStepName &&
-      activeTourKey &&
-      tourKeys.includes(activeTourKey);
+  const showStepOnTour = async () => {
+    const measures = await measureElement();
+    const { x, y, width, height } = measures;
 
-    if (!!activeTourKey && !steps.some((step) => step.name === name)) {
-      console.warn("The current step is not registered in the current tour");
+    assignOnPress();
+
+    const needsScrollOnYAxis = needsScrollY(y, height);
+    const needsScrollOnXAxis = needsScrollX(x, width);
+
+    const needsScroll = needsScrollOnYAxis || needsScrollOnXAxis;
+
+    if (!needsScroll) {
+      addSpotlightOnElement(measures);
+      tooltipProgress.value = withTiming(1, { duration: 200 });
+      moveTooltipToElement(measures);
+      return;
     }
 
-    if (active) {
-      setTimeout(() => measureElement(), 100);
+    isScrolling.value = withTiming(1, {});
+    tooltipProgress.value = withTiming(0, {});
+
+    const willScrollOnYAxis = verticalScrollView && needsScrollOnYAxis;
+    const willScrollOnXAxis = verticalFlatList && needsScrollOnYAxis;
+
+    if (willScrollOnYAxis) {
+      scrollScrollViewYAxis(y, height);
+    }
+    if (horizontalScrollView && needsScrollOnXAxis) {
+      scrollScrollViewXAxis(x, willScrollOnYAxis ? SCROLL_TIMEOUT : 0);
+    }
+
+    if (willScrollOnXAxis) {
+      scrollFlatListViewYAxis(y, height);
+    }
+
+    if (horizontalFlatList && needsScrollOnXAxis) {
+      scrollFlatListViewXAxis(x, willScrollOnYAxis ? SCROLL_TIMEOUT : 0);
+    }
+
+    runTiming(stepHeight, 0, { duration: 100 });
+    setTimeout(
+      async () => {
+        const remeasures = await measureElement();
+
+        addSpotlightOnElement(remeasures, 0);
+
+        moveTooltipToElement(remeasures);
+        tooltipProgress.value = withTiming(1);
+        isScrolling.value = withTiming(0);
+      },
+      willScrollOnYAxis ? SCROLL_TIMEOUT * 2 : SCROLL_TIMEOUT
+    );
+  };
+
+  useEffect(() => {
+    const isTourActive = activeTourKey && tourKeys.includes(activeTourKey);
+
+    const isCurrentStep = name === activeStepName;
+
+    const isActive = isEnabled && isCurrentStep && isTourActive;
+
+    if (isActive) {
+      setTimeout(() => showStepOnTour(), 100);
     }
   }, [activeStepName, activeTourKey]);
 

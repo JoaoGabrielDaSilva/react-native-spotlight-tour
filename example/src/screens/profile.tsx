@@ -1,17 +1,10 @@
-import {
-  Image,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import { Image, StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import {
   Step,
   SpotlightFlatList,
   useSpotlight,
 } from "react-native-spotlight-tour-guide";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Animated from "react-native-reanimated";
 
 const images = [
@@ -34,7 +27,7 @@ export const Profile = () => {
       renderItem={({ item, index }) => (
         <Step
           name={`show-profile-picutre-${index}`}
-          flatList={flatListRef}
+          verticalFlatList={flatListRef}
           tourKeys={["tour-two"]}
           style={{ marginBottom: 24 }}
         >
@@ -86,7 +79,7 @@ export const Profile = () => {
           <View style={styles.header}>
             <Step
               name="show-user-profile-picture"
-              flatList={flatListRef}
+              verticalFlatList={flatListRef}
               tourKeys={["tour-two"]}
               style={{
                 alignSelf: "center",
@@ -101,7 +94,7 @@ export const Profile = () => {
             </Step>
             <Step
               name="show-user-information"
-              flatList={flatListRef}
+              verticalFlatList={flatListRef}
               tourKeys={["tour-two"]}
               style={{ margin: 24, flex: 1 }}
             >
