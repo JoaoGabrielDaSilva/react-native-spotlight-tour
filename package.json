@@ -1,6 +1,6 @@
 {
   "name": "react-native-spotlight-tour-guide",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
   "license": "MIT",
   "description": "A React Native package made for you to build great step by step tours",
