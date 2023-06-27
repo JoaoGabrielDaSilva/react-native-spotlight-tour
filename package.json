@@ -1,6 +1,6 @@
 {
   "name": "react-native-spotlight-tour-guide",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
   "license": "MIT",
   "description": "A React Native package made for you to build great step by step tours",
@@ -27,7 +27,7 @@
     "@shopify/react-native-skia": "0.1.172",
     "react": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-reanimated": "~2.14.4",
+    "react-native-reanimated": "~2.5.4",
     "react-native-svg": "13.4.0"
   },
   "devDependencies": {
