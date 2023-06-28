@@ -41,108 +41,106 @@ export const Stories = () => {
   const { start } = useSpotlight();
 
   return (
-    <View>
-      <SpotlightScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
+    <SpotlightScrollView
+      ref={scrollViewRef}
+      showsVerticalScrollIndicator={false}
+    >
+      <Animated.FlatList
+        ref={storiesHorizontalFlatlistRef}
+        data={storiesImages}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => String(index)}
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+        }}
+        horizontal
+        renderItem={({ item, index }) => (
+          <Step
+            shape="circle"
+            tourKeys={["stories-tour", "suggestions-tour"]}
+            name={`show-story-${index}`}
+            horizontalFlatList={storiesHorizontalFlatlistRef}
+            verticalScrollView={scrollViewRef}
+            style={{ marginTop: 24, marginRight: 12 }}
+          >
+            <View>
+              <Image source={{ uri: item }} style={styles.storyImage} />
+            </View>
+          </Step>
+        )}
+      />
+      <TouchableOpacity
+        onPress={() => {
+          const steps = [
+            {
+              name: `show-story-3`,
+              text: `This is the step number ${storiesImages.length}`,
+            },
+            {
+              name: "show-story-0",
+              text: "This is the story number 1",
+            },
+            {
+              name: `show-story-3`,
+              text: `This is the story number  ${storiesImages.length}`,
+            },
+            { name: "show-story-0", text: "This is the story number 1" },
+          ];
+
+          start("stories-tour", steps);
+        }}
       >
-        <SpotlightFlatList
-          ref={storiesHorizontalFlatlistRef}
-          data={storiesImages}
-          disableVirtualization
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(_, index) => String(index)}
-          contentContainerStyle={{
-            paddingHorizontal: 12,
-          }}
-          horizontal
-          renderItem={({ item, index }) => (
-            <Step
-              tourKeys={["stories-tour", "suggestions-tour"]}
-              name={`show-story-${index}`}
-              horizontalFlatList={storiesHorizontalFlatlistRef}
-              verticalScrollView={scrollViewRef}
-              style={{ marginTop: 24, marginRight: 12 }}
-            >
-              <View>
-                <Image source={{ uri: item }} style={styles.storyImage} />
-              </View>
-            </Step>
-          )}
-        />
-        <TouchableOpacity
-          onPress={() => {
-            const steps = [
-              {
-                name: `show-story-${storiesImages.length - 1}`,
-                text: `This is the step number ${storiesImages.length}`,
-              },
-              {
-                name: "show-suggestion-0",
-                text: "This is the suggestions number 1",
-              },
-              { name: "show-story-0", text: "This is the story number 1" },
-              {
-                name: `show-suggestion-${storiesImages.length - 1}`,
-                text: `This is the step number  ${storiesImages.length}`,
-              },
-            ];
+        <Text style={styles.startButton}>Start Stories Tutorial</Text>
+      </TouchableOpacity>
 
-            start("stories-tour", steps);
-          }}
-        >
-          <Text style={styles.startButton}>Start Stories Tutorial</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          const steps = [
+            {
+              name: `show-story-3`,
+              text: `"This is the story number ${storiesImages.length}`,
+            },
+            {
+              name: `show-suggestion-3`,
+              text: `"This is the suggestion number ${storiesImages.length}`,
+            },
+            { name: "show-story-0", text: "This is the story number 1" },
+            {
+              name: "show-suggestion-0",
+              text: "This is the suggestion number 1",
+            },
+          ];
 
-        <TouchableOpacity
-          onPress={() => {
-            const steps = [
-              {
-                name: `show-story-${storiesImages.length - 1}`,
-                text: `"This is the story number ${storiesImages.length}`,
-              },
-              {
-                name: `show-suggestion-${storiesImages.length - 1}`,
-                text: `"This is the suggestion number ${storiesImages.length}`,
-              },
-              { name: "show-story-0", text: "This is the step number 1" },
-              {
-                name: "show-suggestion-0",
-                text: "This is the suggestion number 1",
-              },
-            ];
-
-            start("suggestions-tour", steps);
-          }}
-        >
-          <Text style={styles.startButton}>Start Suggetions Tutorial</Text>
-        </TouchableOpacity>
-        <SpotlightFlatList
-          style={{ marginTop: 400 }}
-          ref={suggestionsFlatlistRef}
-          data={storiesImages}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(_, index) => String(index)}
-          contentContainerStyle={{
-            paddingHorizontal: 12,
-          }}
-          horizontal
-          renderItem={({ item, index }) => (
-            <Step
-              tourKeys={["suggestions-tour"]}
-              name={`show-suggestion-${index}`}
-              horizontalFlatList={suggestionsFlatlistRef}
-              verticalScrollView={scrollViewRef}
-              style={{ marginTop: 24, marginRight: 12 }}
-            >
-              <View>
-                <Image source={{ uri: item }} style={styles.suggestion} />
-              </View>
-            </Step>
-          )}
-        />
-      </SpotlightScrollView>
-    </View>
+          start("suggestions-tour", steps);
+        }}
+      >
+        <Text style={styles.startButton}>Start Suggetions Tutorial</Text>
+      </TouchableOpacity>
+      <SpotlightFlatList
+        style={{ marginTop: 100 }}
+        ref={suggestionsFlatlistRef}
+        data={storiesImages}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => String(index)}
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+        }}
+        horizontal
+        renderItem={({ item, index }) => (
+          <Step
+            tourKeys={["suggestions-tour"]}
+            name={`show-suggestion-${index}`}
+            horizontalFlatList={suggestionsFlatlistRef}
+            verticalScrollView={scrollViewRef}
+            style={{ marginTop: 24, marginRight: 12 }}
+          >
+            <View>
+              <Image source={{ uri: item }} style={styles.suggestion} />
+            </View>
+          </Step>
+        )}
+      />
+    </SpotlightScrollView>
   );
 };
 

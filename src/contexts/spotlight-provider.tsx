@@ -1,14 +1,17 @@
 import React, {
   MutableRefObject,
   ReactNode,
+  RefObject,
   createContext,
+  createRef,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
 import { Step, StepLayout } from "../types";
-import { Dimensions, Modal } from "react-native";
+import { Dimensions, Modal, View } from "react-native";
 import { SharedValue, useSharedValue } from "react-native-reanimated";
 import { Tooltip } from "../components/tooltip";
 import {
@@ -20,6 +23,7 @@ import {
   Group,
   Rect,
   runTiming,
+  RoundedRect,
 } from "@shopify/react-native-skia";
 
 type SpotlightContext = {
@@ -41,23 +45,30 @@ type SpotlightContext = {
   stepY: SkiaMutableValue<number>;
   stepWidth: SkiaMutableValue<number>;
   stepHeight: SkiaMutableValue<number>;
+  borderRadius: SkiaMutableValue<number>;
+  opacity: SkiaMutableValue<number>;
   activeStepName: string;
   setActiveStepName: React.Dispatch<React.SetStateAction<string>>;
+  ref: RefObject<View>;
 };
 
-const SpotlightContext = createContext({} as SpotlightContext);
+export const SpotlightContext = createContext({} as SpotlightContext);
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 const SPOTLIGHT_PADDING = 16;
 
 export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
+  const ref = useRef<View>(null);
+
   const [stepIndex, setStepIndex] = useState<number | null>(null);
   const [tourKey, setTourkey] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [activeStepName, setActiveStepName] = useState("");
   const [steps, setSteps] = useState<Step[]>([]);
   const tooltipProgress = useSharedValue(0);
+  const borderRadius = useValue(4);
+  const opacity = useValue(0);
 
   const stepX = useValue(windowWidth / 2);
   const stepY = useValue(0);
@@ -71,12 +82,14 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
   const scrollY = useSharedValue(0);
   const scrollX = useSharedValue(0);
 
-  const start = (tourKey: string, steps: Step[]) => {
+  const start = useCallback((tourKey: string, steps: Step[]) => {
     setTourkey(tourKey);
     setStepIndex(0);
     setSteps(steps);
-  };
-  const stop = () => {
+    setActiveStepName("");
+  }, []);
+
+  const stop = useCallback(() => {
     setTourkey(null);
     setStepIndex(null);
     setSteps([]);
@@ -94,20 +107,22 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
     stepY.current = 0;
     stepWidth.current = 0;
     stepHeight.current = 0;
-  };
+  }, []);
 
-  const next = () => {
+  const next = useCallback(() => {
     if (onPress?.current) {
       onPress.current();
     }
     setStepIndex((state) => (state !== null ? state + 1 : state));
-  };
+  }, []);
 
-  const previous = () => {
-    setStepIndex((state) =>
-      state !== null && state - 1 >= 0 ? state - 1 : state
-    );
-  };
+  const previous = useCallback(
+    () =>
+      setStepIndex((state) =>
+        state !== null && state - 1 >= 0 ? state - 1 : state
+      ),
+    []
+  );
 
   useEffect(() => {
     if (stepIndex !== null) {
@@ -115,7 +130,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
       setActiveStepName(activeStep.name);
       setText(activeStep.text);
     }
-  }, [stepIndex]);
+  }, [stepIndex, steps]);
 
   return (
     <SpotlightContext.Provider
@@ -123,12 +138,14 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
         stepIndex,
         tooltipProgress,
         activeStepName,
+        borderRadius,
         setActiveStepName,
         activeTourKey: tourKey,
         isScrolling,
         currentStep,
         scrollY,
         scrollX,
+        opacity,
         onPress,
         text,
         stepX,
@@ -136,6 +153,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
         steps,
         stepWidth,
         stepHeight,
+        ref,
         setText,
         next,
         previous,
@@ -155,12 +173,14 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
                   height={windowHeight}
                   color="white"
                 />
-                <Rect
+                <RoundedRect
+                  r={borderRadius}
                   x={stepX}
                   y={stepY}
                   width={stepWidth}
                   height={stepHeight}
                   color="black"
+                  opacity={opacity}
                 />
               </Group>
             }
@@ -181,7 +201,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
           tooltipProgress={tooltipProgress}
           scrollProgress={isScrolling}
           text={text}
-          isFirst={stepIndex === 1}
+          isFirst={stepIndex === 0}
           isLast={stepIndex === steps.length - 1}
           stop={stop}
           onFinish={() => {
@@ -194,7 +214,9 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
           previous={previous}
         />
       </Modal>
-      {children}
+      <View ref={ref} style={{ flex: 1 }}>
+        {children}
+      </View>
     </SpotlightContext.Provider>
   );
 };

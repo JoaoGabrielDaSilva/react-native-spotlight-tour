@@ -6,9 +6,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+
 import {
   Dimensions,
   LayoutRectangle,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,

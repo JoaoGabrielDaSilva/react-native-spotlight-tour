@@ -45,7 +45,7 @@ export const Profile = () => {
         keyExtractor={(_, index) => String(index)}
         renderItem={({ item, index }) => (
           <Step
-            name={`show-profile-picutre-${index}`}
+            name={`show-profile-picture-${index}`}
             verticalFlatList={flatListRef}
             tourKeys={["profile-tour"]}
             style={{ margin: 8 }}
@@ -77,19 +77,19 @@ export const Profile = () => {
                     text: "This is the information that will be public to anyone",
                   },
                   {
-                    name: "show-profile-picutre-0",
+                    name: "show-profile-picture-0",
                     text: "This is your the latest published image",
                   },
                   {
-                    name: "show-profile-picutre-1",
+                    name: "show-profile-picture-1",
                     text: "This is the second image of the list",
                   },
                   {
-                    name: "show-profile-picutre-2",
+                    name: "show-profile-picture-2",
                     text: "This is the third image of the list",
                   },
                   {
-                    name: `show-profile-picutre-${images.length - 1}`,
+                    name: `show-profile-picture-${images.length - 1}`,
                     text: "And this is the last image of your profile",
                   },
                 ];
@@ -102,6 +102,7 @@ export const Profile = () => {
             <View style={styles.header}>
               <Step
                 name="show-user-profile-picture"
+                shape="circle"
                 verticalFlatList={flatListRef}
                 tourKeys={["profile-tour"]}
                 style={{

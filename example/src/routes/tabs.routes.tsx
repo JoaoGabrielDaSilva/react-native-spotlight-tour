@@ -6,6 +6,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Step } from "react-native-spotlight-tour-guide";
 import { Stories } from "../screens/stories";
 import { Menu } from "../screens/menu";
+import { Modal } from "../screens/modal";
 
 type TabParamList = {
   Menu: undefined;
@@ -67,6 +68,7 @@ export const Tabs = () => {
           ),
         }}
       />
+
       <Tab.Screen
         name="Menu"
         component={Menu}
