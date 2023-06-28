@@ -11,27 +11,19 @@ import React, {
   useState,
 } from "react";
 import { Step, StepLayout } from "../types";
-import { Dimensions, Modal, View } from "react-native";
-import { SharedValue, useSharedValue } from "react-native-reanimated";
+import { Animated, Dimensions, Modal, View } from "react-native";
+
 import { Tooltip } from "../components/tooltip";
-import {
-  Canvas,
-  useValue,
-  SkiaMutableValue,
-  useClockValue,
-  Mask,
-  Group,
-  Rect,
-  runTiming,
-  RoundedRect,
-} from "@shopify/react-native-skia";
+
+import { Svg, Path, Rect } from "react-native-svg";
 
 type SpotlightContext = {
   stepIndex: number | null;
-  currentStep: SharedValue<StepLayout | null>;
-  isScrolling: SharedValue<number>;
-  scrollY: SharedValue<number>;
-  scrollX: SharedValue<number>;
+  stepPosition: Animated.ValueXY;
+  stepSize: Animated.ValueXY;
+  isScrolling: Animated.Value;
+  scrollY: Animated.Value;
+  scrollX: Animated.Value;
   activeTourKey: string | null;
   next: () => void;
   previous: () => void;
@@ -40,17 +32,15 @@ type SpotlightContext = {
   steps: Step[];
   setText: React.Dispatch<React.SetStateAction<string>>;
   onPress: MutableRefObject<(() => void) | undefined>;
-  tooltipProgress: SharedValue<number>;
-  stepX: SkiaMutableValue<number>;
-  stepY: SkiaMutableValue<number>;
-  stepWidth: SkiaMutableValue<number>;
-  stepHeight: SkiaMutableValue<number>;
-  borderRadius: SkiaMutableValue<number>;
-  opacity: SkiaMutableValue<number>;
+  tooltipProgress: Animated.Value;
+  stepProgress: Animated.Value;
   activeStepName: string;
   setActiveStepName: React.Dispatch<React.SetStateAction<string>>;
   ref: RefObject<View>;
 };
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 export const SpotlightContext = createContext({} as SpotlightContext);
 
@@ -58,29 +48,39 @@ const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 const SPOTLIGHT_PADDING = 16;
 
+const getSvgPath = ({ size, position, canvasSize }): string => {
+  const positionX = (position.x as any)._value as number;
+  const positionY = (position.y as any)._value as number;
+  const sizeX = (size.x as any)._value as number;
+  const sizeY = (size.y as any)._value as number;
+
+  return `M0,0H${canvasSize.x}V${canvasSize.y}H0V0ZM${positionX},${positionY}H${
+    positionX + sizeX
+  }V${positionY + sizeY}H${positionX}V${positionY}Z`;
+};
+
+const defaultSvgPath = `M0,0H${windowWidth}V${windowHeight}H0V0ZM0,0H0V0H0V0Z`;
+
 export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
   const ref = useRef<View>(null);
+  const pathRef = useRef<Path>(null);
 
   const [stepIndex, setStepIndex] = useState<number | null>(null);
   const [tourKey, setTourkey] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [activeStepName, setActiveStepName] = useState("");
   const [steps, setSteps] = useState<Step[]>([]);
-  const tooltipProgress = useSharedValue(0);
-  const borderRadius = useValue(4);
-  const opacity = useValue(0);
+  const tooltipProgress = useRef(new Animated.Value(0)).current;
+  const isScrolling = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  const stepX = useValue(windowWidth / 2);
-  const stepY = useValue(0);
-  const stepWidth = useValue(0);
-  const stepHeight = useValue(0);
+  const stepPosition = useRef(
+    new Animated.ValueXY({ x: windowWidth / 2, y: 0 })
+  ).current;
+  const stepSize = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
   const onPress = useRef<(() => void) | undefined>(undefined);
-
-  const currentStep = useSharedValue<StepLayout | null>(null);
-  const isScrolling = useSharedValue(0);
-  const scrollY = useSharedValue(0);
-  const scrollX = useSharedValue(0);
 
   const start = useCallback((tourKey: string, steps: Step[]) => {
     setTourkey(tourKey);
@@ -94,19 +94,11 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
     setStepIndex(null);
     setSteps([]);
     onPress.current = undefined;
-    currentStep.value = {
-      width: 0,
-      height: 0,
-      x: 0,
-      y: 0,
-    };
-    scrollX.value = 0;
-    scrollY.value = 0;
-    tooltipProgress.value = 0;
-    stepX.current = windowWidth / 2;
-    stepY.current = 0;
-    stepWidth.current = 0;
-    stepHeight.current = 0;
+    scrollX.setValue(0);
+    scrollY.setValue(0);
+    tooltipProgress.setValue(0);
+    stepPosition.setValue({ x: windowWidth / 2, y: 0 });
+    stepSize.setValue({ x: 0, y: 0 });
   }, []);
 
   const next = useCallback(() => {
@@ -125,12 +117,37 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
-    if (stepIndex !== null) {
-      const activeStep = steps[stepIndex];
-      setActiveStepName(activeStep.name);
-      setText(activeStep.text);
-    }
+    Animated.timing(tooltipProgress, {
+      toValue: 0,
+      useNativeDriver: false,
+      duration: 100,
+    }).start(() => {
+      if (stepIndex !== null) {
+        const activeStep = steps[stepIndex];
+        setActiveStepName(activeStep.name);
+        setText(activeStep.text);
+      }
+    });
   }, [stepIndex, steps]);
+
+  const animationListener = useCallback(() => {
+    const d: string = getSvgPath({
+      size: stepSize,
+      position: stepPosition,
+      canvasSize: { x: windowWidth, y: windowHeight },
+    });
+
+    if (pathRef.current) {
+      pathRef.current.setNativeProps({ d });
+    }
+  }, [stepSize, stepPosition, tooltipProgress]);
+
+  useEffect(() => {
+    const id = stepPosition.addListener(animationListener);
+    return () => {
+      stepPosition.removeListener(id);
+    };
+  }, [animationListener, stepPosition]);
 
   return (
     <SpotlightContext.Provider
@@ -138,21 +155,16 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
         stepIndex,
         tooltipProgress,
         activeStepName,
-        borderRadius,
         setActiveStepName,
         activeTourKey: tourKey,
         isScrolling,
-        currentStep,
+        stepPosition,
+        stepSize,
         scrollY,
         scrollX,
-        opacity,
         onPress,
         text,
-        stepX,
-        stepY,
         steps,
-        stepWidth,
-        stepHeight,
         ref,
         setText,
         next,
@@ -161,42 +173,18 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       <Modal transparent visible={!!tourKey}>
-        <Canvas style={{ flex: 1 }}>
-          <Mask
-            mode="luminance"
-            mask={
-              <Group>
-                <Rect
-                  x={0}
-                  y={0}
-                  width={windowWidth}
-                  height={windowHeight}
-                  color="white"
-                />
-                <RoundedRect
-                  r={borderRadius}
-                  x={stepX}
-                  y={stepY}
-                  width={stepWidth}
-                  height={stepHeight}
-                  color="black"
-                  opacity={opacity}
-                />
-              </Group>
-            }
-          >
-            <Rect
-              x={0}
-              y={0}
-              width={windowWidth}
-              height={windowHeight}
-              color="#0000008b"
-            />
-          </Mask>
-        </Canvas>
+        <Svg style={{ flex: 1 }}>
+          <AnimatedPath
+            ref={pathRef}
+            fillRule="evenodd"
+            fill="#00000060"
+            d={defaultSvgPath}
+          />
+        </Svg>
 
         <Tooltip
-          currentStep={currentStep}
+          stepPosition={stepPosition}
+          stepSize={stepSize}
           spotlightPadding={SPOTLIGHT_PADDING}
           tooltipProgress={tooltipProgress}
           scrollProgress={isScrolling}

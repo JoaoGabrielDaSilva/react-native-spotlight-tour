@@ -1,13 +1,7 @@
-import React from "react";
-import Animated, {
-  SharedValue,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
+  Animated,
   Dimensions,
   LayoutRectangle,
   Pressable,
@@ -16,12 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { StepLayout } from "../types";
+import { useSharedValue } from "react-native-reanimated";
 
 type TooltipProps = {
-  currentStep: SharedValue<StepLayout | null>;
-  tooltipProgress: SharedValue<number>;
-  scrollProgress: SharedValue<number>;
+  stepPosition: Animated.ValueXY;
+  stepSize: Animated.ValueXY;
+  tooltipProgress: Animated.Value;
+  scrollProgress: Animated.Value;
   spotlightPadding: number;
   text: string;
   isFirst: boolean;
@@ -35,7 +30,8 @@ type TooltipProps = {
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 export const Tooltip = ({
-  currentStep,
+  stepPosition,
+  stepSize,
   spotlightPadding,
   text,
   tooltipProgress,
@@ -47,43 +43,37 @@ export const Tooltip = ({
   previous,
   stop,
 }: TooltipProps) => {
-  const tooltipLayout = useSharedValue<LayoutRectangle>({
-    width: 0,
-    height: 0,
-    x: 0,
-    y: 0,
-  });
+  const [tooltipHeight, setTooltipHeight] = useState(0);
+  const topPosition = useRef(new Animated.Value(0)).current;
 
-  const tooltipAnimatedStyles = useAnimatedStyle(() => {
-    const TOP_SPOTLIGHT_PADDING = spotlightPadding;
-    const TOOLTIP_SPACING = spotlightPadding;
+  useEffect(() => {
+    const id = stepPosition.addListener((value) => {
+      // console.log(value.y + tooltipHeight + spotlightPadding);
+      const bottom = value.y + stepSize.y?._value + spotlightPadding;
+      const top = value.y - tooltipHeight - spotlightPadding;
 
-    const bottomPosition =
-      (currentStep?.value?.y || 0) +
-      (currentStep?.value?.height || 0) +
-      TOOLTIP_SPACING;
+      const shouldPositionTop = bottom >= windowHeight - 150;
 
-    const topPosition =
-      (currentStep?.value?.y || 0) -
-      tooltipLayout.value.height -
-      TOP_SPOTLIGHT_PADDING;
+      topPosition.setValue(shouldPositionTop ? top : bottom);
+    });
 
-    const shouldPositionTop = bottomPosition >= windowHeight - 150;
-
-    return {
-      top: scrollProgress.value
-        ? shouldPositionTop
-          ? topPosition
-          : bottomPosition
-        : withTiming(shouldPositionTop ? topPosition : bottomPosition),
-      opacity: tooltipProgress.value,
+    return () => {
+      stepPosition.removeListener(id);
     };
-  });
+  }, [stepPosition, tooltipHeight]);
 
   return (
     <Animated.View
-      style={[tooltipAnimatedStyles, styles.container]}
-      onLayout={({ nativeEvent }) => (tooltipLayout.value = nativeEvent.layout)}
+      style={[
+        styles.container,
+        {
+          top: topPosition,
+          opacity: tooltipProgress,
+        },
+      ]}
+      onLayout={({ nativeEvent }) =>
+        setTooltipHeight(nativeEvent.layout.height)
+      }
     >
       <Text>{text}</Text>
       <TooltipButtons
