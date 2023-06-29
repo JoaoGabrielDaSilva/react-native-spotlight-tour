@@ -33,14 +33,12 @@ type SpotlightContext = {
   setText: React.Dispatch<React.SetStateAction<string>>;
   onPress: MutableRefObject<(() => void) | undefined>;
   tooltipProgress: Animated.Value;
-  stepProgress: Animated.Value;
   activeStepName: string;
   setActiveStepName: React.Dispatch<React.SetStateAction<string>>;
   ref: RefObject<View>;
 };
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 export const SpotlightContext = createContext({} as SpotlightContext);
 
@@ -48,7 +46,17 @@ const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 const SPOTLIGHT_PADDING = 16;
 
-const getSvgPath = ({ size, position, canvasSize }): string => {
+type GetSvgPathParams = {
+  size: Animated.ValueXY;
+  position: Animated.ValueXY;
+  canvasSize: { x: number; y: number };
+};
+
+const getSvgPath = ({
+  size,
+  position,
+  canvasSize,
+}: GetSvgPathParams): string => {
   const positionX = (position.x as any)._value as number;
   const positionY = (position.y as any)._value as number;
   const sizeX = (size.x as any)._value as number;
@@ -138,6 +146,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (pathRef.current) {
+      // @ts-ignore next-line
       pathRef.current.setNativeProps({ d });
     }
   }, [stepSize, stepPosition, tooltipProgress]);
@@ -153,6 +162,7 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
     <SpotlightContext.Provider
       value={{
         stepIndex,
+
         tooltipProgress,
         activeStepName,
         setActiveStepName,

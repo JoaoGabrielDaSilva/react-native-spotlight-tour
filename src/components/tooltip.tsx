@@ -48,8 +48,8 @@ export const Tooltip = ({
 
   useEffect(() => {
     const id = stepPosition.addListener((value) => {
-      // console.log(value.y + tooltipHeight + spotlightPadding);
-      const bottom = value.y + stepSize.y?._value + spotlightPadding;
+      const stepHeight = (stepSize.y as any)?._value as number;
+      const bottom = value.y + stepHeight + spotlightPadding;
       const top = value.y - tooltipHeight - spotlightPadding;
 
       const shouldPositionTop = bottom >= windowHeight - 150;

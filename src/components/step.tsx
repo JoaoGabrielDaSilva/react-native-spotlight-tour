@@ -74,7 +74,7 @@ export const Step = <T,>({
 
   const measureElement = async (): Promise<LayoutRectangle> => {
     return new Promise((res) => {
-      stepRef.current?.measure((_, __, width, height, x, y) => {
+      stepRef.current?.measureLayout(ref.current!, (x, y, width, height) => {
         res({
           x,
           y,
@@ -85,25 +85,29 @@ export const Step = <T,>({
     });
   };
 
-  const needsScrollY = useCallback(
-    (y: number, height: number) =>
+  const needsScrollY = useCallback((y: number, height: number) => {
+    const scrollYOffset = (scrollY as any)._value as number;
+
+    return (
       y + height > windowHeight ||
       y <
-        ((scrollY._value as number) > windowHeight
-          ? windowHeight - scrollY._value
-          : scrollY._value),
-    []
-  );
+        ((scrollYOffset as number) > windowHeight
+          ? windowHeight - scrollYOffset
+          : scrollYOffset)
+    );
+  }, []);
 
-  const needsScrollX = useCallback(
-    (x: number, width: number) =>
+  const needsScrollX = useCallback((x: number, width: number) => {
+    const scrollXOffset = (scrollX as any)._value as number;
+
+    return (
       x + width > windowWidth ||
       x <
-        (scrollX._value > windowWidth
-          ? windowWidth - scrollX._value
-          : scrollX._value),
-    []
-  );
+        (scrollXOffset > windowWidth
+          ? windowWidth - scrollXOffset
+          : scrollXOffset)
+    );
+  }, []);
 
   const assignOnPress = useCallback(() => {
     if (onPress) {

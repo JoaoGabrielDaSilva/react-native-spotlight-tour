@@ -7,13 +7,11 @@ import { StackRoutes } from "./src/routes/stack.routes";
 
 export default function App() {
   return (
-    <>
+    <SpotlightProvider>
       <StatusBar style="auto" />
       <NavigationContainer>
-        <SpotlightProvider>
-          <StackRoutes />
-        </SpotlightProvider>
+        <StackRoutes />
       </NavigationContainer>
-    </>
+    </SpotlightProvider>
   );
 }
