@@ -59,7 +59,7 @@ export const Modal = () => {
         <View
           style={{
             flex: 1,
-            backgroundColor: "#000000060",
+            backgroundColor: "#00000090",
             justifyContent: "center",
             alignItems: "center",
           }}
@@ -67,7 +67,7 @@ export const Modal = () => {
           <Step
             name="show-modal-body"
             tourKeys={["modal-tour"]}
-            style={styles.button}
+            style={[styles.button]}
             onPress={openModal}
           >
             <View
@@ -75,19 +75,18 @@ export const Modal = () => {
                 width: "80%",
                 backgroundColor: "#FFFFFF",
                 borderRadius: 6,
-                padding: 12,
               }}
             >
               <Step
                 name="show-modal-title"
                 tourKeys={["modal-tour"]}
-                style={styles.button}
+                style={[styles.button, { marginBottom: 24 }]}
                 onPress={openModal}
               >
                 <Text
                   style={{
                     textAlign: "center",
-                    marginBottom: 24,
+
                     fontSize: 20,
                   }}
                 >
@@ -95,9 +94,19 @@ export const Modal = () => {
                 </Text>
               </Step>
               <Step
+                name="show-modal-close"
+                tourKeys={["modal-tour"]}
+                style={{ position: "absolute", right: 12, top: 12 }}
+                onPress={close}
+              >
+                <TouchableOpacity onPress={close}>
+                  <Text>X</Text>
+                </TouchableOpacity>
+              </Step>
+              <Step
                 name="show-modal-content"
                 tourKeys={["modal-tour"]}
-                style={styles.button}
+                style={[styles.button, { padding: 12 }]}
                 onPress={openModal}
               >
                 <Text>

@@ -1,6 +1,9 @@
 import {
+  Animated,
   Dimensions,
+  FlatList,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -8,12 +11,12 @@ import {
 } from "react-native";
 
 import { useRef } from "react";
-import Animated from "react-native-reanimated";
 import {
   SpotlightFlatList,
   SpotlightScrollView,
   Step,
   useSpotlight,
+  StepShape,
 } from "react-native-spotlight-tour-guide";
 
 const storiesImages = [
@@ -34,18 +37,18 @@ const storiesImages = [
 const { width } = Dimensions.get("window");
 
 export const Stories = () => {
-  const storiesHorizontalFlatlistRef = useRef<Animated.FlatList<any>>(null);
-  const suggestionsFlatlistRef = useRef<Animated.FlatList<any>>(null);
-  const scrollViewRef = useRef<Animated.ScrollView>(null);
+  const storiesHorizontalFlatlistRef = useRef<FlatList<any>>(null);
+  const suggestionsFlatlistRef = useRef<FlatList<any>>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const { start } = useSpotlight();
+  const { start, next } = useSpotlight();
 
   return (
     <SpotlightScrollView
       ref={scrollViewRef}
       showsVerticalScrollIndicator={false}
     >
-      <Animated.FlatList
+      <SpotlightFlatList
         ref={storiesHorizontalFlatlistRef}
         data={storiesImages}
         showsHorizontalScrollIndicator={false}
@@ -56,10 +59,10 @@ export const Stories = () => {
         horizontal
         renderItem={({ item, index }) => (
           <Step
-            shape="circle"
             tourKeys={["stories-tour", "suggestions-tour"]}
             name={`show-story-${index}`}
-            horizontalFlatList={storiesHorizontalFlatlistRef}
+            shape={StepShape.CIRCLE}
+            iosHorizontalFlatList={storiesHorizontalFlatlistRef}
             verticalScrollView={scrollViewRef}
             style={{ marginTop: 24, marginRight: 12 }}
           >
@@ -88,6 +91,7 @@ export const Stories = () => {
           ];
 
           start("stories-tour", steps);
+          setInterval(next, 3000);
         }}
       >
         <Text style={styles.startButton}>Start Stories Tutorial</Text>
@@ -112,6 +116,7 @@ export const Stories = () => {
           ];
 
           start("suggestions-tour", steps);
+          setInterval(next, 3000);
         }}
       >
         <Text style={styles.startButton}>Start Suggetions Tutorial</Text>
@@ -120,6 +125,7 @@ export const Stories = () => {
         style={{ marginTop: 100 }}
         ref={suggestionsFlatlistRef}
         data={storiesImages}
+        disableVirtualization
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, index) => String(index)}
         contentContainerStyle={{
@@ -130,7 +136,7 @@ export const Stories = () => {
           <Step
             tourKeys={["suggestions-tour"]}
             name={`show-suggestion-${index}`}
-            horizontalFlatList={suggestionsFlatlistRef}
+            iosHorizontalFlatList={suggestionsFlatlistRef}
             verticalScrollView={scrollViewRef}
             style={{ marginTop: 24, marginRight: 12 }}
           >

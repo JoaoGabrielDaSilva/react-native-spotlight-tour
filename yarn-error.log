@@ -29,7 +29,7 @@ Trace:
 npm manifest: 
   {
     "name": "react-native-spotlight-tour-guide",
-    "version": "1.0.8",
+    "version": "1.0.17",
     "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
     "license": "MIT",
     "description": "A React Native package made for you to build great step by step tours",
@@ -53,10 +53,8 @@ npm manifest:
       "url": "git+https://github.com/JoaoGabrielDaSilva/react-native-spotlight-tour"
     },
     "dependencies": {
-      "@shopify/react-native-skia": "0.1.172",
       "react": "18.2.0",
       "react-native": "0.71.8",
-      "react-native-reanimated": "~2.14.4",
       "react-native-svg": "13.4.0"
     },
     "devDependencies": {

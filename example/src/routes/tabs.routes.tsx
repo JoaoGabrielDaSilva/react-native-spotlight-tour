@@ -84,6 +84,21 @@ export const Tabs = () => {
           ),
         }}
       />
+      <Tab.Screen
+        name="Modal"
+        component={Modal}
+        options={{
+          tabBarLabel: ({ children }) => (
+            <Step
+              name="show-modal-tab"
+              tourKeys={["menu-tour"]}
+              onPress={() => navigate("Modal")}
+            >
+              <Text style={{ fontSize: 16 }}>{children}</Text>
+            </Step>
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 };

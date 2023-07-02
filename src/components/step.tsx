@@ -1,26 +1,31 @@
 import React, {
   ReactNode,
   RefObject,
-  cloneElement,
   useCallback,
-  useContext,
   useEffect,
   useRef,
+  useState,
 } from "react";
 import {
-  Animated,
   Dimensions,
   FlatList,
   LayoutRectangle,
+  Modal,
   Platform,
   ScrollView,
   StyleProp,
   View,
   ViewStyle,
-  findNodeHandle,
 } from "react-native";
-import { runTiming } from "@shopify/react-native-skia";
-import { SpotlightContext, useSpotlight } from "../contexts/spotlight-provider";
+import { useSpotlight } from "../contexts/spotlight-provider";
+import Animated, {
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { ClipPath, Defs, Path, Rect, Svg } from "react-native-svg";
+import { StepShape } from "../types";
+import { Tooltip } from "./tooltip";
 
 type StepProps<T> = {
   children: ReactNode;
@@ -28,17 +33,21 @@ type StepProps<T> = {
   style?: StyleProp<ViewStyle>;
   verticalScrollView?: RefObject<ScrollView>;
   horizontalScrollView?: RefObject<ScrollView>;
-  verticalFlatList?: RefObject<FlatList<T>>;
-  horizontalFlatList?: RefObject<FlatList<T>>;
-  shape?: string;
+  iosVerticalFlatList?: RefObject<FlatList<T>>;
+  iosHorizontalFlatList?: RefObject<FlatList<T>>;
   tourKeys: string[];
   onPress?: () => void;
   isEnabled?: boolean;
+  shape?: StepShape;
+  padding?: number;
+  borderRadius?: number;
 };
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
-const SPOTLIGHT_PADDING = 16;
+const AnimatedClipPath = Animated.createAnimatedComponent(ClipPath);
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
 const SCROLL_TIMEOUT = 500;
 
 export const Step = <T,>({
@@ -47,65 +56,83 @@ export const Step = <T,>({
   style,
   tourKeys,
   verticalScrollView,
-
   horizontalScrollView,
-  verticalFlatList,
-  shape = "square",
-  horizontalFlatList,
+  iosVerticalFlatList,
+  iosHorizontalFlatList,
   onPress,
+  shape,
+  padding = 0,
+  borderRadius,
   isEnabled = true,
 }: StepProps<T>) => {
   const {
     activeTourKey,
-
-    isScrolling,
-    scrollY,
-    scrollX,
-    tooltipProgress,
     onPress: spotlightOnPress,
-    stepPosition,
-    stepSize,
     activeStepName,
-
-    ref,
+    stop,
+    scrollX,
+    scrollY,
   } = useSpotlight();
+
+  const [stepMeasures, setStepMeasures] = useState<LayoutRectangle>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+
+  const spotlightRef = useRef<Rect>(null);
+
+  const tooltipProgress = useSharedValue(0);
 
   const stepRef = useRef<View>(null);
 
   const measureElement = async (): Promise<LayoutRectangle> => {
-    return new Promise((res) => {
-      stepRef.current?.measureLayout(ref.current!, (x, y, width, height) => {
-        res({
-          x,
-          y,
-          width,
-          height,
-        });
-      });
+    return new Promise((res, rej) => {
+      stepRef.current?.measure(
+        (_, __, width, height, x, y) => {
+          if (
+            width === undefined ||
+            height === undefined ||
+            x === undefined ||
+            y === undefined
+          ) {
+            rej(
+              new Error(
+                `The step ${name} won't work on android because it cannot be measured since it's offscreen and inside a FlatList`
+              )
+            );
+          }
+          res({
+            x,
+            y,
+            width,
+            height,
+          });
+        },
+        //@ts-ignore next-line
+        (e) => console.log(e)
+      );
     });
   };
 
   const needsScrollY = useCallback((y: number, height: number) => {
-    const scrollYOffset = (scrollY as any)._value as number;
-
     return (
       y + height > windowHeight ||
       y <
-        ((scrollYOffset as number) > windowHeight
-          ? windowHeight - scrollYOffset
-          : scrollYOffset)
+        (scrollY.value > windowHeight
+          ? windowHeight - scrollY.value
+          : scrollY.value)
     );
   }, []);
 
   const needsScrollX = useCallback((x: number, width: number) => {
-    const scrollXOffset = (scrollX as any)._value as number;
-
     return (
       x + width > windowWidth ||
       x <
-        (scrollXOffset > windowWidth
-          ? windowWidth - scrollXOffset
-          : scrollXOffset)
+        (scrollX.value > windowWidth
+          ? windowWidth - scrollX.value
+          : scrollX.value)
     );
   }, []);
 
@@ -118,39 +145,32 @@ export const Step = <T,>({
   }, []);
 
   const moveTooltipToElement = useCallback(
-    ({ width, height, x, y }: LayoutRectangle, callback: () => void) => {
-      Animated.parallel([
-        Animated.timing(stepPosition, {
-          toValue: {
-            x: x - SPOTLIGHT_PADDING / 2,
-            y: y - SPOTLIGHT_PADDING / 2 + (Platform.OS === "ios" ? 0 : -30),
-          },
-          useNativeDriver: false,
-          duration: 300,
-        }),
-        Animated.timing(stepSize, {
-          toValue: {
-            x: width + SPOTLIGHT_PADDING,
-            y: height + SPOTLIGHT_PADDING,
-          },
-          useNativeDriver: false,
-          duration: 300,
-        }),
-      ]).start(callback);
+    ({ width, height, x, y }: LayoutRectangle) => {
+      const data = {
+        x: x - padding / 2,
+        y: y - padding / 2 + (Platform.OS === "ios" ? 0 : -30),
+        width: width + padding,
+        height: height + padding,
+      };
+
+      setStepMeasures(data);
+
+      spotlightRef?.current?.setNativeProps({ ...data, rx: width + padding });
+
+      tooltipProgress.value = withTiming(1);
     },
     []
   );
 
   const scrollScrollViewYAxis = useCallback((y: number, height: number) => {
     verticalScrollView?.current?.scrollTo({
-      y: y - height + SPOTLIGHT_PADDING + (Platform.OS === "android" ? 30 : 0),
+      y: y - height + padding + (Platform.OS === "android" ? 30 : 0),
     });
   }, []);
   const scrollScrollViewXAxis = useCallback(
     (x: number, timeout = 0) =>
       setTimeout(
-        () =>
-          horizontalScrollView?.current?.scrollTo({ x: x - SPOTLIGHT_PADDING }),
+        () => horizontalScrollView?.current?.scrollTo({ x: x - padding }),
         timeout
       ),
     []
@@ -158,9 +178,8 @@ export const Step = <T,>({
 
   const scrollFlatListViewYAxis = useCallback(
     (y: number, height: number) =>
-      verticalFlatList?.current?.scrollToOffset({
-        offset:
-          y - height + SPOTLIGHT_PADDING + (Platform.OS === "android" ? 30 : 0),
+      iosVerticalFlatList?.current?.scrollToOffset({
+        offset: y - height + padding + (Platform.OS === "android" ? 30 : 0),
       }),
     []
   );
@@ -169,71 +188,61 @@ export const Step = <T,>({
     (x: number, timeout = 0) =>
       setTimeout(
         () =>
-          horizontalFlatList?.current?.scrollToOffset({
-            offset: x - SPOTLIGHT_PADDING,
+          iosHorizontalFlatList?.current?.scrollToOffset({
+            offset: x - padding,
           }),
         timeout
       ),
     []
   );
 
-  const showTooltip = () =>
-    Animated.parallel([
-      Animated.timing(tooltipProgress, {
-        toValue: 1,
-        useNativeDriver: false,
-        duration: 200,
-      }),
-      Animated.timing(isScrolling, {
-        toValue: 0,
-        useNativeDriver: true,
-        duration: 200,
-      }),
-    ]).start();
-
   const showStepOnTour = async () => {
-    const measures = await measureElement();
+    try {
+      tooltipProgress.value = withTiming(0);
+      const measures = await measureElement();
 
-    const { x, y, width, height } = measures;
+      const { x, y, width, height } = measures;
 
-    assignOnPress();
+      assignOnPress();
 
-    const needsScrollOnYAxis = needsScrollY(y, height);
-    const needsScrollOnXAxis = needsScrollX(x, width);
+      const needsScrollOnYAxis = needsScrollY(y, height);
+      const needsScrollOnXAxis = needsScrollX(x, width);
 
-    const needsScroll = needsScrollOnYAxis || needsScrollOnXAxis;
+      const needsScroll = needsScrollOnYAxis || needsScrollOnXAxis;
 
-    if (!needsScroll) {
-      return moveTooltipToElement(measures, showTooltip);
+      if (!needsScroll) {
+        return moveTooltipToElement(measures);
+      }
+
+      if (needsScrollOnYAxis && verticalScrollView?.current) {
+        scrollScrollViewYAxis(y, height);
+      }
+      if (needsScrollOnXAxis && horizontalScrollView?.current) {
+        scrollScrollViewXAxis(x, needsScrollOnYAxis ? SCROLL_TIMEOUT : 0);
+      }
+
+      if (needsScrollOnYAxis && iosVerticalFlatList?.current) {
+        scrollFlatListViewYAxis(y, height);
+      }
+
+      if (needsScrollOnXAxis && iosHorizontalFlatList?.current) {
+        scrollFlatListViewXAxis(x, needsScrollOnYAxis ? SCROLL_TIMEOUT : 0);
+      }
+
+      setTimeout(
+        async () => {
+          const remeasures = await measureElement();
+
+          moveTooltipToElement(remeasures);
+        },
+        needsScrollOnXAxis && needsScrollOnYAxis
+          ? SCROLL_TIMEOUT * 2
+          : SCROLL_TIMEOUT
+      );
+    } catch (error) {
+      console.warn((error as Error).message);
+      stop();
     }
-
-    if (needsScrollOnYAxis && verticalScrollView?.current) {
-      scrollScrollViewYAxis(y, height);
-    }
-    if (needsScrollOnXAxis && horizontalScrollView?.current) {
-      scrollScrollViewXAxis(x, needsScrollOnYAxis ? SCROLL_TIMEOUT : 0);
-    }
-
-    if (needsScrollOnYAxis && verticalFlatList?.current) {
-      scrollFlatListViewYAxis(y, height);
-    }
-
-    if (needsScrollOnXAxis && horizontalFlatList?.current) {
-      scrollFlatListViewXAxis(x, needsScrollOnYAxis ? SCROLL_TIMEOUT : 0);
-    }
-
-    setTimeout(
-      async () => {
-        const remeasures = await measureElement();
-
-        moveTooltipToElement(remeasures, () => {
-          showTooltip();
-        });
-      },
-      needsScrollOnXAxis && needsScrollOnYAxis
-        ? SCROLL_TIMEOUT * 2
-        : SCROLL_TIMEOUT
-    );
   };
 
   const isActive = useCallback(() => {
@@ -243,7 +252,7 @@ export const Step = <T,>({
 
     const isActive = isEnabled && isCurrentStep && isTourActive;
 
-    return isActive;
+    return !!isActive;
   }, [activeStepName, activeTourKey]);
 
   useEffect(() => {
@@ -254,6 +263,29 @@ export const Step = <T,>({
 
   return (
     <View style={style} ref={stepRef}>
+      <Modal transparent visible={isActive()} animationType="fade">
+        <Svg style={{ flex: 1 }}>
+          <Defs>
+            <ClipPath id="clip_out">
+              <Rect x={0} y={0} width={windowWidth} height={windowHeight} />
+              <Rect ref={spotlightRef} x={0} y={0} width={0} height={0} />
+            </ClipPath>
+          </Defs>
+          <Rect
+            x={0}
+            y={0}
+            width={windowWidth}
+            height={windowHeight}
+            clipPath="url(#clip_out)"
+            fill="#00000060"
+          />
+        </Svg>
+        <Tooltip
+          stepMeasures={stepMeasures}
+          padding={padding}
+          tooltipProgress={tooltipProgress}
+        />
+      </Modal>
       {children}
     </View>
   );

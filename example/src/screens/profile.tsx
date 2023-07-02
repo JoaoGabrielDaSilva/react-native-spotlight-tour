@@ -46,7 +46,7 @@ export const Profile = () => {
         renderItem={({ item, index }) => (
           <Step
             name={`show-profile-picture-${index}`}
-            verticalFlatList={flatListRef}
+            iosVerticalFlatList={flatListRef}
             tourKeys={["profile-tour"]}
             style={{ margin: 8 }}
           >
@@ -103,7 +103,7 @@ export const Profile = () => {
               <Step
                 name="show-user-profile-picture"
                 shape="circle"
-                verticalFlatList={flatListRef}
+                iosVerticalFlatList={flatListRef}
                 tourKeys={["profile-tour"]}
                 style={{
                   alignSelf: "center",
@@ -118,7 +118,7 @@ export const Profile = () => {
               </Step>
               <Step
                 name="show-user-information"
-                verticalFlatList={flatListRef}
+                iosVerticalFlatList={flatListRef}
                 tourKeys={["profile-tour"]}
                 style={{ margin: 24, flex: 1 }}
               >

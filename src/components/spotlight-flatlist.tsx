@@ -1,7 +1,7 @@
-import Animated, { useAnimatedScrollHandler } from "react-native-reanimated";
 import { useSpotlight } from "../contexts/spotlight-provider";
-import React, { forwardRef, ForwardedRef } from "react";
+import React, { forwardRef, LegacyRef } from "react";
 import { FlatList, FlatListProps } from "react-native";
+import Animated, { useAnimatedScrollHandler } from "react-native-reanimated";
 
 declare module "react" {
   function forwardRef<T, P = {}>(
@@ -12,25 +12,20 @@ declare module "react" {
 type SpotlightFlatListProps<T> = FlatListProps<T>;
 
 export const SpotlightFlatList = forwardRef(
-  <T,>(
-    props: SpotlightFlatListProps<T>,
-    ref: ForwardedRef<Animated.FlatList<T>>
-  ) => {
+  <T,>(props: SpotlightFlatListProps<T>, ref: LegacyRef<FlatList<T>>) => {
     const { scrollY, scrollX } = useSpotlight();
 
     const scrollHandler = useAnimatedScrollHandler({
       onScroll: (e) => {
-        if (props.horizontal) {
-          scrollX.value = e.contentOffset.x;
-        } else {
-          scrollY.value = e.contentOffset.y;
-        }
+        scrollX.value = e.contentOffset.x;
+        scrollY.value = e.contentOffset.y;
       },
     });
 
     return (
       <Animated.FlatList
         {...props}
+        //@ts-ignore next-line
         ref={ref}
         scrollEventThrottle={16}
         onScroll={scrollHandler}
