@@ -45,10 +45,8 @@ type StepProps<T> = {
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
-const AnimatedClipPath = Animated.createAnimatedComponent(ClipPath);
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
-
 const SCROLL_TIMEOUT = 500;
+const EXTRA_SCROLL_OFFSET = 8;
 
 export const Step = <T,>({
   children,
@@ -74,6 +72,7 @@ export const Step = <T,>({
     scrollY,
   } = useSpotlight();
 
+  const [rerender, setRerender] = useState(false);
   const [stepMeasures, setStepMeasures] = useState<LayoutRectangle>({
     x: 0,
     y: 0,
@@ -148,23 +147,34 @@ export const Step = <T,>({
     ({ width, height, x, y }: LayoutRectangle) => {
       const data = {
         x: x - padding / 2,
-        y: y - padding / 2 + (Platform.OS === "ios" ? 0 : -30),
+        y: y - padding / 2 + (Platform.OS === "ios" ? 0 : -28),
         width: width + padding,
         height: height + padding,
       };
 
       setStepMeasures(data);
 
-      spotlightRef?.current?.setNativeProps({ ...data, rx: width + padding });
-
       tooltipProgress.value = withTiming(1);
+      if (Platform.OS === "android") {
+        setRerender((r) => !r);
+      } else {
+        spotlightRef?.current?.setNativeProps({
+          ...data,
+          rx: shape === StepShape.CIRCLE ? width + padding : borderRadius || 0,
+        });
+      }
     },
     []
   );
 
   const scrollScrollViewYAxis = useCallback((y: number, height: number) => {
     verticalScrollView?.current?.scrollTo({
-      y: y - height + padding + (Platform.OS === "android" ? 30 : 0),
+      y:
+        y -
+        height +
+        padding +
+        EXTRA_SCROLL_OFFSET +
+        (Platform.OS === "android" ? 28 : 0),
     });
   }, []);
   const scrollScrollViewXAxis = useCallback(
@@ -179,7 +189,12 @@ export const Step = <T,>({
   const scrollFlatListViewYAxis = useCallback(
     (y: number, height: number) =>
       iosVerticalFlatList?.current?.scrollToOffset({
-        offset: y - height + padding + (Platform.OS === "android" ? 30 : 0),
+        offset:
+          y -
+          height +
+          padding +
+          EXTRA_SCROLL_OFFSET +
+          (Platform.OS === "android" ? 28 : 0),
       }),
     []
   );
@@ -253,11 +268,13 @@ export const Step = <T,>({
     const isActive = isEnabled && isCurrentStep && isTourActive;
 
     return !!isActive;
-  }, [activeStepName, activeTourKey]);
+  }, [activeStepName, activeTourKey, stepMeasures]);
 
   useEffect(() => {
     if (isActive()) {
       setTimeout(() => showStepOnTour(), 100);
+    } else {
+      tooltipProgress.value = 0;
     }
   }, [activeStepName, activeTourKey]);
 
@@ -266,9 +283,20 @@ export const Step = <T,>({
       <Modal transparent visible={isActive()} animationType="fade">
         <Svg style={{ flex: 1 }}>
           <Defs>
-            <ClipPath id="clip_out">
+            <ClipPath id="clip_out" key={String(rerender)}>
               <Rect x={0} y={0} width={windowWidth} height={windowHeight} />
-              <Rect ref={spotlightRef} x={0} y={0} width={0} height={0} />
+              <Rect
+                ref={spotlightRef}
+                x={stepMeasures.x}
+                y={stepMeasures.y}
+                width={stepMeasures.width}
+                height={stepMeasures.height}
+                rx={
+                  shape === StepShape.CIRCLE
+                    ? stepMeasures.width + padding
+                    : borderRadius || 0
+                }
+              />
             </ClipPath>
           </Defs>
           <Rect

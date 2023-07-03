@@ -55,6 +55,9 @@ export const SpotlightProvider = ({ children }: { children: ReactNode }) => {
   const stop = useCallback(() => {
     setActiveStepName("");
     setSteps([]);
+    setStepIndex(0);
+    setText("");
+    setActiveTourKey("");
     onPress.current = undefined;
   }, []);
 

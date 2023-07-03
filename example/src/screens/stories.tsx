@@ -62,6 +62,7 @@ export const Stories = () => {
             tourKeys={["stories-tour", "suggestions-tour"]}
             name={`show-story-${index}`}
             shape={StepShape.CIRCLE}
+            padding={16}
             iosHorizontalFlatList={storiesHorizontalFlatlistRef}
             verticalScrollView={scrollViewRef}
             style={{ marginTop: 24, marginRight: 12 }}
@@ -91,7 +92,6 @@ export const Stories = () => {
           ];
 
           start("stories-tour", steps);
-          setInterval(next, 3000);
         }}
       >
         <Text style={styles.startButton}>Start Stories Tutorial</Text>
@@ -116,7 +116,6 @@ export const Stories = () => {
           ];
 
           start("suggestions-tour", steps);
-          setInterval(next, 3000);
         }}
       >
         <Text style={styles.startButton}>Start Suggetions Tutorial</Text>
@@ -134,7 +133,9 @@ export const Stories = () => {
         horizontal
         renderItem={({ item, index }) => (
           <Step
+            borderRadius={12}
             tourKeys={["suggestions-tour"]}
+            padding={16}
             name={`show-suggestion-${index}`}
             iosHorizontalFlatList={suggestionsFlatlistRef}
             verticalScrollView={scrollViewRef}
