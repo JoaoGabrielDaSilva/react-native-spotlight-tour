@@ -1,6 +1,6 @@
 {
   "name": "react-native-spotlight-tour-guide",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "author": "João Gabriel <joao.gabsilva1007@gmail.com>",
   "license": "MIT",
   "description": "A React Native package made for you to build great step by step tours",
@@ -24,14 +24,12 @@
     "url": "git+https://github.com/JoaoGabrielDaSilva/react-native-spotlight-tour"
   },
   "dependencies": {
-    "@gorhom/portal": "^1.0.14",
-    "expo-blur": "^12.3.0",
     "react": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-gesture-handler": "^2.12.0",
-    "react-native-reanimated": "^3.3.0",
-    "react-native-screens": "^3.22.0",
-    "react-native-svg": "13.4.0"
+    "react-native-gesture-handler": "^2.9.0",
+    "react-native-reanimated": "2.4.14",
+    "react-native-screens": "^3.20.0",
+    "react-native-svg": "^13.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
